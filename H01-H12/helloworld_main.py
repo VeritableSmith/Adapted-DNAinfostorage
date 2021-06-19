@@ -12,9 +12,9 @@ from pylab import rcParams
 from re import sub
 
 # Local Imports:
-from helloworld_Encode_Decode import EncodeDecode
-from helloworld_ONT_decoding  import Decode_ONT
-from helloworld_MiSeq_analyses import MiSeq_Analysis
+from Classes.helloworld_Encode_Decode import EncodeDecode
+from Classes.helloworld_ONT_decoding  import Decode_ONT
+from Classes.helloworld_MiSeq_analyses import MiSeq_Analysis
 
 ## Encode_Decode:
 
@@ -31,23 +31,19 @@ for string in hello_world:
 #### 1. Template architecture (length, terminal base)
 #### 2. Most frequent
 ####
-data = pd.read_csv("H01-H12/H01-H12_dataTable.csv",sep=",", header=0,
+data = pd.read_csv("H01-H12/Data/H01-H12_dataTable.csv",sep=",", header=0,
            dtype={"template_ID":str,"match":int,"template":str,"strandC":str,"strandR":str,"strandR_len":int,"strandC_len":int,"template_align":str,"strand_align":str})
 
-data["possiblehit"] = data.apply(Decode_ONT.findpossiblehits,axis=1)
+data["possiblehit"] = data.apply(EncodeDecode.findpossiblehits,axis=1)
 
 templates_to_decode = ['H01','H02','H03','H04','H05','H06','H07','H08','H09','H10','H11','H12']
 
 for template in templates_to_decode:
-    decoding(data,template)
-
-
-
-
+    EncodeDecode.decoding(data,template)
 
 
 ## ONT_Decoding:
-data = pd.read_csv("H01-H12_dataTable_ONT.csv",sep=",", header=0,names=["template_ID","match","template","strandC","strandR","time","read"])
+data = pd.read_csv("H01-H12/Data/H01-H12_dataTable_ONT.csv",sep=",", header=0,names=["template_ID","match","template","strandC","strandR","time","read"])
 data["time"] = pd.to_datetime(data["time"])
 
 # start is defined as the time stamp of the first read
@@ -57,7 +53,7 @@ data["min_from_start"] = (data["time"].subtract(min(data["time"])))/np.timedelta
 data["sec_from_start"] = (data["time"].subtract(min(data["time"])))/np.timedelta64(1, 's')
 data.fillna('',inplace=True)
 
-data["possiblehit"] = data.apply(findpossiblehits,axis=1)
+data["possiblehit"] = data.apply(Decode_ONT.findpossiblehits,axis=1)
 
 strands = [data.loc[data["template_ID"]=="H01"].shape[0],
            data.loc[data["template_ID"]=="H02"].shape[0],
@@ -120,18 +116,18 @@ print(hrs[1:])
 iters = 50
 # iters = 10000 #trials used in publication - long run time! may want to parallelize
 
-H01_decoding = decodingprobs(H01,hrs[1:],iters)
-H02_decoding = decodingprobs(H02,hrs[1:],iters)
-H03_decoding = decodingprobs(H03,hrs[1:],iters)
-H04_decoding = decodingprobs(H04,hrs[1:],iters)
-H05_decoding = decodingprobs(H05,hrs[1:],iters)
-H06_decoding = decodingprobs(H06,hrs[1:],iters)
-H07_decoding = decodingprobs(H07,hrs[1:],iters)
-H08_decoding = decodingprobs(H08,hrs[1:],iters)
-H09_decoding = decodingprobs(H09,hrs[1:],iters)
-H10_decoding = decodingprobs(H10,hrs[1:],iters)
-H11_decoding = decodingprobs(H11,hrs[1:],iters)
-H12_decoding = decodingprobs(H12,hrs[1:],iters)
+H01_decoding = Decode_ONT.decodingprobs(H01,hrs[1:],iters)
+H02_decoding = Decode_ONT.decodingprobs(H02,hrs[1:],iters)
+H03_decoding = Decode_ONT.decodingprobs(H03,hrs[1:],iters)
+H04_decoding = Decode_ONT.decodingprobs(H04,hrs[1:],iters)
+H05_decoding = Decode_ONT.decodingprobs(H05,hrs[1:],iters)
+H06_decoding = Decode_ONT.decodingprobs(H06,hrs[1:],iters)
+H07_decoding = Decode_ONT.decodingprobs(H07,hrs[1:],iters)
+H08_decoding = Decode_ONT.decodingprobs(H08,hrs[1:],iters)
+H09_decoding = Decode_ONT.decodingprobs(H09,hrs[1:],iters)
+H10_decoding = Decode_ONT.decodingprobs(H10,hrs[1:],iters)
+H11_decoding = Decode_ONT.decodingprobs(H11,hrs[1:],iters)
+H12_decoding = Decode_ONT.decodingprobs(H12,hrs[1:],iters)
 
 
 pd.DataFrame(list(zip(hrs, H01_decoding, H02_decoding, H03_decoding, H04_decoding,
@@ -172,10 +168,8 @@ plt.savefig("decodingtimes.pdf")
 
 
 
-
-
 ## MiSeq Analysis:
-data = pd.read_csv("H01-H12_dataTable.csv",sep=",", header=0,
+data = pd.read_csv("H01-H12/Data/H01-H12_dataTable.csv",sep=",", header=0,
            dtype={"template_ID":str,"match":int,"template":str,"strandC":str,"strandR":str,"strandR_len":int,"strandC_len":int,"template_align":str,"strand_align":str})
 
 #extract the perfect strands for each template
@@ -196,18 +190,18 @@ H12_perfect = data.loc[(data["template_ID"]=='H12') & (data["match"]==1)]
 
 # run length encode each perfect strand individually
 
-H01_perfectruns = rle(H01_perfect)
-H02_perfectruns = rle(H02_perfect)
-H03_perfectruns = rle(H03_perfect)
-H04_perfectruns = rle(H04_perfect)
-H05_perfectruns = rle(H05_perfect)
-H06_perfectruns = rle(H06_perfect)
-H07_perfectruns = rle(H07_perfect)
-H08_perfectruns = rle(H08_perfect)
-H09_perfectruns = rle(H09_perfect)
-H10_perfectruns = rle(H10_perfect)
-H11_perfectruns = rle(H11_perfect)
-H12_perfectruns = rle(H12_perfect)
+H01_perfectruns = MiSeq_Analysis.rle(H01_perfect)
+H02_perfectruns = MiSeq_Analysis.rle(H02_perfect)
+H03_perfectruns = MiSeq_Analysis.rle(H03_perfect)
+H04_perfectruns = MiSeq_Analysis.rle(H04_perfect)
+H05_perfectruns = MiSeq_Analysis.rle(H05_perfect)
+H06_perfectruns = MiSeq_Analysis.rle(H06_perfect)
+H07_perfectruns = MiSeq_Analysis.rle(H07_perfect)
+H08_perfectruns = MiSeq_Analysis.rle(H08_perfect)
+H09_perfectruns = MiSeq_Analysis.rle(H09_perfect)
+H10_perfectruns = MiSeq_Analysis.rle(H10_perfect)
+H11_perfectruns = MiSeq_Analysis.rle(H11_perfect)
+H12_perfectruns = MiSeq_Analysis.rle(H12_perfect)
 
 
 #plot the extension length for each nucleotide, for all perfect strands of H01-H12
@@ -272,7 +266,7 @@ data_noNA = data.dropna()
 data_noNA.reset_index(inplace=True)
 
 for index, row in data_noNA.iterrows():
-    (curr_rawlen,curr_compressedlen) = snipTrailing(row)
+    (curr_rawlen,curr_compressedlen) = MiSeq_Analysis.snipTrailing(row)
     trimmed_data['trimmedlen'].append(curr_rawlen)
     trimmed_data['trimmedcompressed'].append(curr_compressedlen)
 
@@ -283,7 +277,7 @@ data_withTrim = pd.concat([data_noNA,trimmed_data_df],axis=1)
 # extract only the perfect strands and tabulate extension lengths for each transition
 
 data_withTrim_perfects = data_withTrim.loc[data_withTrim["match"]==1]
-trans = countTransitions(data_withTrim_perfects)
+trans = MiSeq_Analysis.countTransitions(data_withTrim_perfects)
 
 df = pd.DataFrame.from_dict(trans, orient='index')
 df_melt=pd.melt(df.transpose())
@@ -381,7 +375,7 @@ plt.savefig("helloworld_lengthdist.pdf")
 # tabulate errors for all synthesized strands
 
 numBases = list(range(0,9))
-all_errors = bulkErrors_count(data)
+all_errors = MiSeq_Analysis.bulkErrors_count(data)
 
 # plot errors for all synthesized strands in bulk
 
@@ -447,18 +441,18 @@ H12 = data.loc[data["template_ID"]=='H12']
 
 # tabulate errors for strands synthesized per template
 
-H01_errors = bulkErrors_count(H01)
-H02_errors = bulkErrors_count(H02)
-H03_errors = bulkErrors_count(H03)
-H04_errors = bulkErrors_count(H04)
-H05_errors = bulkErrors_count(H05)
-H06_errors = bulkErrors_count(H06)
-H07_errors = bulkErrors_count(H07)
-H08_errors = bulkErrors_count(H08)
-H09_errors = bulkErrors_count(H09)
-H10_errors = bulkErrors_count(H10)
-H11_errors = bulkErrors_count(H11)
-H12_errors = bulkErrors_count(H12)
+H01_errors = MiSeq_Analysis.bulkErrors_count(H01)
+H02_errors = MiSeq_Analysis.bulkErrors_count(H02)
+H03_errors = MiSeq_Analysis.bulkErrors_count(H03)
+H04_errors = MiSeq_Analysis.bulkErrors_count(H04)
+H05_errors = MiSeq_Analysis.bulkErrors_count(H05)
+H06_errors = MiSeq_Analysis.bulkErrors_count(H06)
+H07_errors = MiSeq_Analysis.bulkErrors_count(H07)
+H08_errors = MiSeq_Analysis.bulkErrors_count(H08)
+H09_errors = MiSeq_Analysis.bulkErrors_count(H09)
+H10_errors = MiSeq_Analysis.bulkErrors_count(H10)
+H11_errors = MiSeq_Analysis.bulkErrors_count(H11)
+H12_errors = MiSeq_Analysis.bulkErrors_count(H12)
 
 
 # plot errors for strands synthesized per template sequence
